@@ -13,5 +13,15 @@ class UserForm(FlaskForm):
 
 class ItemsForm(FlaskForm): 
     tracking_number = StringField('Tracking #',validators=[DataRequired()])
-    inventory = StringField('Inventory ID')
+    username = StringField('Inventory Username')
     item_weight = FloatField('Item Weight',validators=[DataRequired()])
+    scanning_country= StringField('Country',validators=[DataRequired()])
+    item_category = StringField('Item Category')
+    submit =SubmitField('Add Item')
+
+
+class loginForm(FlaskForm): 
+    username = StringField('Username',validators=[DataRequired()])
+    password = PasswordField('Password',validators=[DataRequired()])
+    login = SubmitField('Login')
+

@@ -1,33 +1,27 @@
+{%extends 'base.html'%}
+{% from 'bootstrap4/form.html' import render_form %}
+{%block content %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width">
     <title>Document</title>
 </head>
 <body>
-    <form method = 'POST' >
-    {{form.hidden_tag()}}
 
-    {{form.name.label}}<br>
-    {{form.name}}<br>
-   
-    {{form.username.label}}<br>
-    {{form.username}}<br>
-    
-    {{form.email.label}}<br>
-    {{form.email}}<br>
-    
-    {{form.address.label}}<br>
-    {{form.address}}<br>
-    
-    {{form.phone.label}}<br>
-    {{form.phone}}<br>
+<div class="row">
+    <div class = 'col-md-3'>
+        <form method = 'POST' >
 
-    {{form.password.label}}<br>
-    {{form.password}}<br>
-
-    {{form.submit}}
+            {{render_form(form,
+                button_style='success',
+                button_size= 'lg',
+                )}}
+        </form>
     
-    </form>
+    </div>
+</div>
 </body>
 </html>
+
+{%endblock%}
