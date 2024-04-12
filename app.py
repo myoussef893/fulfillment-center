@@ -17,7 +17,7 @@
 # 7. a Home Page. Done
 # 9. a page to change passwords and user details. 
 
-from flask import Flask, render_template, redirect, url_for,request
+from flask import Flask, render_template, redirect, url_for,request,session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager,login_user,login_required,current_user,UserMixin,logout_user
 from random import randint
@@ -26,6 +26,12 @@ from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash,check_password_hash
 from flask_bootstrap import Bootstrap4
 from datetime import datetime as dt
+import pandas as pd 
+import plotly.express as px
+import sqlite3
+from json import dumps
+from plotly.utils import PlotlyJSONEncoder
+
 
 app = Flask(__name__)
 
@@ -147,12 +153,14 @@ def logout():
 # This function is suppsed to show the items that are related to the logged in customer only.
 @app.route('/dashboard',methods=['Get','Post'])
 def client_dashboard():
-    return render_template('client-dashboard.html')
+    items = Items.query.all()
+    return render_template('client-dashboard.html',items=items)
 
 # This Function is to view all the items. 
 @app.route('/items',methods=['get','post'])
 def view_items(): 
     items = Items.query.all()
+   
     return render_template('view_items.html',items=items)
 
 # This Function is to add a new item to the database. 
@@ -173,9 +181,8 @@ def scan_item():
     return render_template('scan_item.html',form=item_form)
 
 # This Funcion is to edit and existing item in database
-@app.route('/items/<int:id>/edit',methods=['GET',"POST"])
+@app.route('/dashboard/<int:id>/edit',methods=['GET',"POST"])
 def edit_item(id):
-    # item = Items.query.filter_by(id=id).first()
     form = ItemsForm()
     item = db.get_or_404(Items,id)
     
@@ -184,7 +191,9 @@ def edit_item(id):
         item.source_country =   form.scanning_country.data
         item.username = form.username.data
         db.session.commit()
-        return redirect('/items')
+        return redirect('/dashboard')
+    else:
+        return render_template('scan_item.html',form=form)
 
 # This Function is to delete added items in database
 @app.route('/items/<int:id>/delete')
@@ -195,7 +204,26 @@ def delete_item(id):
     return redirect('/items')
 
 
+@app.route('/dashboard')
+def charts(): 
+    db_connection = sqlite3.connect('./instance/warehouserbase.db')
+    query = 'SELECT * FROM items'
+    df =pd.read_sql_query(query,db_connection)
+    db_connection.close()
 
+    date = pd.to_datetime(df['receiving_date'])
+    weight = pd.to_numeric(df['weight'])
+
+    labels = [i for i in date]
+    values = [i for i in weight]
+    return render_template('client-dashboard.html',labels=labels,values=values)
+
+
+@app.route('/add_to_cart', methods=['GET','POST'])
+def add_to_cart():
+    item = request.form['item']
+    session.setdefault('cart',{})[item] =session['cart'].get(item,0)+1
+    return redirect(url_for('view_cart'))
 
 if __name__ == "__main__": 
     app.run(debug=True)
