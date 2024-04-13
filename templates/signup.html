@@ -1,0 +1,27 @@
+{%extends 'base.html'%}
+{% from 'bootstrap4/form.html' import render_form %}
+{%block content %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Document</title>
+</head>
+<body>
+
+<div class="row">
+    <div class = 'col-md-3'>
+        <form method = 'POST' >
+
+            {{render_form(form,
+                button_style='success',
+                button_size= 'lg',
+                )}}
+        </form>
+    
+    </div>
+</div>
+</body>
+</html>
+
+{%endblock%}

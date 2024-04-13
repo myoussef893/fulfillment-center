@@ -1,0 +1,43 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+    <a href = '{{url_for("scan_item")}}'>Scan New Item</a><br>
+
+   <table>
+    <thead>
+        <tr>
+            <th>Item ID</th>
+            <th>Tracking Number</th>
+            <th>Source Country</th>
+            <th>Receiving Date</th>
+            <th>Shipping Date</th>
+            <th>Username</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in items %}
+            <tr>
+                <td>{{ item.id }}</td>
+                <td>{{ item.tracking_number }}</td>
+                <td>{{ item.source_country }}</td>
+                <td>{{ item.receiving_date }}</td>
+                <td>{{ item.shipping_date }}</td>
+                <td>{{ item.username }}</td>
+                <td>{{ item.measured_weight }}</td>
+
+                <td><a href="{{url_for('edit_item',id = item.id)}}">edit</a></td>
+                <td><a href="{{url_for('delete_item',id= item.id)}}">delete</a></td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+
+</body>
+</html>
