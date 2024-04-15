@@ -3,3 +3,12 @@
     margin-top: 100px;
     padding-left: 35px;
 }
+
+.card{
+    padding: 15px;
+    margin: 20px;
+    border: rgb(68, 68, 68) 1px solid;
+    border-radius: 25px;
+    box-shadow: inset;
+}
+
