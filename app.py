@@ -28,7 +28,9 @@ from flask_bootstrap import Bootstrap4
 from datetime import datetime as dt
 
 
-app = Flask(__name__)
+app = Flask(__name__,
+            static_url_path='',
+            static_folder='public')
 
 bootstrap = Bootstrap4(app)
 
@@ -61,7 +63,7 @@ class User(UserMixin,db.Model):
     address = db.Column(db.String)
     name = db.column(db.String)
     password = db.Column(db.String,nullable= False)
-   
+    group = db.Column(db.String)
    # Relationships: 
     items = db.relationship('Items',backref='user',lazy=True)
     order = db.relationship('Orders',backref='user',lazy=True)
@@ -130,9 +132,6 @@ with app.app_context():
 def home(): 
     return render_template('index.html')
 
-
-
-
 ## LOGIN / LOGOUT / REGISTER A NEW USER: 
 #Sign up page. 
 @app.route('/signup',methods=['GET','POST'])
@@ -189,7 +188,5 @@ def client_dashboard():
 
 from items import *
 from cart import *
-
-
 if __name__ == "__main__": 
     app.run(debug=True)
