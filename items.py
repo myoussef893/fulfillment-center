@@ -1,10 +1,26 @@
-from app import app,render_template,Items,ItemsForm,redirect,db,dt,math 
+from app import app,render_template,Items,ItemsForm,redirect,db,dt,math
+from cart import stripe
+
+stripe.api_key= 'sk_test_51NGN0CAa8vXaWUE9tisrczMe1enBRKQADGy7rDhyxisvisaujTI9l00nQQgVnHzOltMT1UE7nMLOgesK9xBfoHLg00eeQMcWdp'
 
 @app.route('/items',methods=['get','post'])
 def view_items(): 
     items = Items.query.all()
    
     return render_template('items.html',id=items)
+
+def s_function(fetched_item): 
+    product = stripe.Product.create(
+        name = f"Item Number: {fetched_item.id}",
+        description= f"Item:{fetched_item.id},\n Weight: {fetched_item.chargeable_weight},\n Tracking: {fetched_item.tracking_number}",
+    )
+    stripe.Price.create(
+        currency='usd',
+        unit_amount = int((fetched_item.chargeable_weight*27)*100),
+        product_data={'name':product['name']},
+    )
+    return product.id
+
 
 # This Function is to add a new item to the database. 
 @app.route('/items/scan_item',methods=['get','post'])
@@ -18,11 +34,16 @@ def scan_item():
             measured_weight= item_form.item_weight.data,
             chargeable_weight = math.ceil(item_form.item_weight.data*10)/10,
             username = item_form.username.data,
-            quantity = 1,
-            
+            quantity = 1
         )
+
         db.session.add(new_item)
         db.session.commit()
+        striper =s_function(new_item)
+        updated_item = db.get_or_404(Items,new_item.id)
+        updated_item.stripe_id = striper
+        db.session.commit()
+
         return redirect('/items')
     return render_template('scan_item.html',form=item_form)
 

@@ -1,3 +1,13 @@
-instance/
-__pycache__
+./__pycache__
+./instance
+./migrations
+d.ipynb
+.hintrc
+dahboard.py
+./virt/
 server.py
+.vscode
+__pycache__
+instance/
+virt
+stripe_keys_tokens.py

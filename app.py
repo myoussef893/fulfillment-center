@@ -26,14 +26,16 @@ from forms import ItemsForm,UserForm,loginForm,Checkout
 from werkzeug.security import generate_password_hash,check_password_hash
 from flask_bootstrap import Bootstrap4
 from datetime import datetime as dt
+import stripe 
+from stripe_keys_tokens import token
+from flask_admin import Admin
+from flask_admin.contrib.sqla import ModelView
 
 
-app = Flask(__name__,
-            static_url_path='',
-            static_folder='public')
-
+stripe.api_key = token
+app = Flask(__name__)
 bootstrap = Bootstrap4(app)
-
+admin = Admin(app,name='Shipperd Warehouse',template_mode='bootstrap4')
 #creating the loging manager so it could be used in the login function 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -47,8 +49,10 @@ def load_user(user_id):
 db = SQLAlchemy()
 
 
+
 app.config['SECRET_KEY'] = 'secret_key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///warehouserbase.db'
+app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'
 
 db.init_app(app)
 
@@ -99,6 +103,7 @@ class Items(db.Model):
     item_price = db.Column(db.Float)
     quantity= db.Column(db.Integer,nullable =False)
     scanner = db.Column(db.String)
+    stripe_id = db.Column(db.String)
     # Relationships: 
     order = db.relationship('Orders')
     # Foreign Keys of Relationships: 
@@ -126,6 +131,9 @@ class Orders(db.Model):
 with app.app_context():
     db.create_all()
 
+
+admin.add_view(ModelView(User,db.session))
+admin.add_view(ModelView(Items,db.session))
 
 ## Home page, 
 @app.route('/')
@@ -188,5 +196,10 @@ def client_dashboard():
 
 from items import *
 from cart import *
+
+
+
+
+
 if __name__ == "__main__": 
     app.run(debug=True)
