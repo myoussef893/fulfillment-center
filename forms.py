@@ -1,8 +1,9 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField,EmailField,FloatField,SubmitField,PasswordField,IntegerField,SelectField
 from wtforms.validators import DataRequired
-
-egypt_governorates = [
+source_countries = ['','US','UK','UAE','CN']
+status = ['Received in origin warehouse','Ready for International Shipping','Shipped Internationlly','In Transit','In Customs',"Received at Destination Country's warehouse",'Out for delivery','Deliverd']
+egypt_governorates = ['',
     'Alexandria', 
     'Aswan', 
     'Asyut', 
@@ -32,6 +33,10 @@ egypt_governorates = [
     'Suez'
 ]
 
+payment_method = ['','Cash On Delivery','Bank Deposit',"Credit Card"]
+
+
+
 class UserForm(FlaskForm): 
     username = StringField('username',validators=[DataRequired()])
     email = EmailField('email',validators=[DataRequired()])
@@ -43,11 +48,11 @@ class UserForm(FlaskForm):
 
 class ItemsForm(FlaskForm): 
     tracking_number = StringField('Tracking #',validators=[DataRequired()])
-    username = StringField('Inventory Username')
+    username = StringField('Username',validators=[DataRequired()])
     item_weight = FloatField('Item Weight',validators=[DataRequired()])
-    scanning_country= StringField('Country',validators=[DataRequired()])
+    scanning_country= SelectField('Country',validators=[DataRequired()],choices=source_countries)
     item_category = StringField('Item Category')
-
+    status = SelectField('Status',choices=status,validators=[DataRequired()])
     submit =SubmitField('Add Item')
 
 
@@ -61,6 +66,7 @@ class Checkout(FlaskForm):
     last_name = StringField('Last Name',validators=[DataRequired()])
     phone = IntegerField('Phone Number',validators=[DataRequired()])
     address = StringField('Address',validators=[DataRequired()])
-    payment_method = StringField('Payment Method',validators=[DataRequired()])
     city = SelectField('City',choices=egypt_governorates)
-    username = StringField('Username',validators=[DataRequired()])
+    payment_method = SelectField('Payment Method',choices=payment_method)
+    
+    submit = SubmitField('Compelete Order')

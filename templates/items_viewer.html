@@ -1,0 +1,155 @@
+{% extends 'client-dashboard.html'%}
+{%block body%}
+<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+      <h1 class="h2">inventory</h1>
+    </div>
+
+    <div>
+      
+      <h2>Your US Address</h2>
+      <table>
+        <tbody>
+          <tr>
+            <p><strong>Address Line 1:</strong> 136 Jestan Blvd,</p>
+            <p><strong>Address Line 2:</strong> {{current_user.inventory}}</p>
+            <p><strong>Zip Code:</strong> 19720</p>
+            <p><strong>State & City</strong> New Castle - DE</p>
+            <p><strong>Phone number: </strong> 322-777-4383 </p>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+
+
+<br>
+
+    <h2>Received at Origin Country:</h2>
+    <div class="table-responsive small">
+      <table class="table table-striped table-sm">
+        <thead>
+          <tr>
+            <th scope="col">Item id:</th>
+            <th scope="col">Scanned at: </th>
+            <th scope="col">Tracking#:</th>
+            <th scope="col">Receiving Country: </th>
+            <th scope="col">Weight: </th>
+            
+
+          </tr>
+        </thead>
+
+        <tbody>
+        {% for item in items %}
+          <tr>
+            {%if item.status == 'Received in origin warehouse':%}
+              <td>{{item.id}}</td>
+              <td>{{item.receiving_date}}</td>
+              <td>{{item.tracking_number}}</td>
+              <td>{{item.source_country}}</td>
+              <td>{{item.chargeable_weight}}</td>
+
+            {%endif%}    
+            
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+
+<br>
+      <h2>In Tranist to Destination Country:</h2>
+      {% if transit %}
+      <div class="table-responsive small">
+        <table class="table table-striped table-sm">
+          <thead>
+            <tr>
+              <th scope="col">Item id:</th>
+              <th scope="col">Scanned at: </th>
+              <th scope="col">Tracking#:</th>
+              <th scope="col">Receiving Country: </th>
+              <th scope="col">Weight: </th>
+            </tr>
+          </thead>
+          
+          {% for item in transit %}
+           <tbody>
+            <tr>
+              <td>{{item.id}}</td>
+              <td>{{item.receiving_date}}</td>
+              <td>{{item.tracking_number}}</td>
+              <td>{{item.source_country}}</td>
+              <td>{{item.chargeable_weight}}</td>
+            </tr>
+          {% endfor %}
+          
+          </tbody>
+ 
+        </table>
+        {%else%}
+        <h3>No Items available in this section </h3>
+        
+      
+      {%endif%}
+      </div>
+
+      <br>
+  <h2>Received in Destination Country:</h2>
+      {% if arrived %}
+      <div class="table-responsive small">
+        <table class="table table-striped table-sm">
+          <thead>
+            <tr>
+              <th scope="col">Item id:</th>
+              <th scope="col">Scanned at: </th>
+              <th scope="col">Tracking#:</th>
+              <th scope="col">Receiving Country: </th>
+              <th scope="col">Weight: </th>
+              <th scope="col">Add to Cart: </th>   
+            </tr>
+          </thead>
+          
+          {% for item in arrived %}
+           <tbody>
+            <tr>
+              <td>{{item.id}}</td>
+              <td>{{item.receiving_date}}</td>
+              <td>{{item.tracking_number}}</td>
+              <td>{{item.source_country}}</td>
+              <td>{{item.chargeable_weight}}</td>
+              <td><a href="{{url_for('add_to_cart', item_id=item.id)}}" class="btn btn-success">Add to Cart</a></td>
+            </tr>
+          {% endfor %}
+          
+          </tbody>
+ 
+        </table>
+        {%else%}
+        <h3>No Items available in this section </h3>
+        
+      
+      {%endif%}
+      </div>
+      <script>
+
+        const buttons = document.querySelectorAll(".btn.btn-success"); // Target all matching buttons
+        
+        buttons.forEach(button => {
+          button.addEventListener("click", () => {
+            // Temporarily disable button to prevent multiple clicks
+            button.disabled = true;
+        
+            // Update button text and class (optional)
+            button.textContent = "Items Added";
+            button.classList.add("added");  // Add visual feedback
+        
+            // Simulate additional processing or redirect (replace with your logic)
+            setTimeout(() => {
+              // Re-enable button after a short delay
+              button.disabled = false;
+            }, 1000); // Adjust delay as needed (1 second in this example)
+          });
+        });
+        </script>
+</main>
+{%endblock%}

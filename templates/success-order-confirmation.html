@@ -1,0 +1,57 @@
+{%extends 'base.html'%}
+
+{% block content%}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Confirmation</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .success-icon {
+      font-size: 72px;
+      color: green;
+    }
+    .message {
+      font-size: 20px;
+      margin: 20px 0;
+    }
+    .order-details {
+      margin: 20px 0;
+    }
+    .order-details h3 {
+      margin-bottom: 10px;
+    }
+    .order-details p {
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <i class="fas fa-check-circle success-icon"></i> <h2 class="message">Your order has been placed successfully!</h2>
+
+    <div class="order-details">
+      <h3>Order details</h3>
+      <p>Order number: <span id="order-number">{{order}}</span></p>
+      <p>Email: <span id="order-email">customer@example.com</span></p>
+      </div>
+
+    <a href="/dashboard" class="btn">Back to Dashboard</a>
+  </div>
+</body>
+</html>
+
+
+{%endblock%}

@@ -1,0 +1,9 @@
+.addToCartButton{
+    background-color: blue;
+    color: white;
+}
+
+
+.addToCartButtonAdded{
+    background-color: red;
+}

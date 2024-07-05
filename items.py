@@ -1,29 +1,31 @@
-from app import app,render_template,Items,ItemsForm,redirect,db,dt,math
-from cart import stripe
+from app import app,render_template,Items,ItemsForm,redirect,db,dt,math,current_user,url_for,session,Orders
 
-stripe.api_key= 'sk_test_51NGN0CAa8vXaWUE9tisrczMe1enBRKQADGy7rDhyxisvisaujTI9l00nQQgVnHzOltMT1UE7nMLOgesK9xBfoHLg00eeQMcWdp'
+from flask_login import current_user
 
-@app.route('/items',methods=['get','post'])
-def view_items(): 
-    items = Items.query.all()
-   
-    return render_template('items.html',id=items)
+@app.route('/items', methods=['get', 'post'])
+def view_items():
+    if current_user.is_authenticated:  # Check if user is logged in
 
-def s_function(fetched_item): 
-    product = stripe.Product.create(
-        name = f"Item Number: {fetched_item.id}",
-        description= f"Item:{fetched_item.id},\n Weight: {fetched_item.chargeable_weight},\n Tracking: {fetched_item.tracking_number}",
-    )
-    stripe.Price.create(
-        currency='usd',
-        unit_amount = int((fetched_item.chargeable_weight*27)*100),
-        product_data={'name':product['name']},
-    )
-    return product.id
+        items = Items.query.filter_by(username=current_user.username).all()
+        return render_template('items_viewer.html', id=items)
+    else:
+        # Handle case where user is not logged in (e.g., redirect to login page)
+        return redirect(url_for('login'))
 
 
+# def s_function(fetched_item): 
+#     product = stripe.Product.create(
+#         name = f"Item Number: {fetched_item.id}",
+#         description= f"Item:{fetched_item.id},\n Weight: {fetched_item.chargeable_weight},\n Tracking: {fetched_item.tracking_number}",
+#     )
+#     stripe.Price.create(
+#         currency='usd',
+#         unit_amount = int((fetched_item.chargeable_weight*27)*100),
+#         product_data={'name':product['name']},
+#     )
+#     return product.id
 # This Function is to add a new item to the database. 
-@app.route('/items/scan_item',methods=['get','post'])
+@app.route('/scan_item',methods=['get','post'])
 def scan_item():
     item_form = ItemsForm()
     if item_form.validate_on_submit():
@@ -34,14 +36,12 @@ def scan_item():
             measured_weight= item_form.item_weight.data,
             chargeable_weight = math.ceil(item_form.item_weight.data*10)/10,
             username = item_form.username.data,
-            quantity = 1
+            quantity = 1,
+            status = item_form.status.data
         )
 
         db.session.add(new_item)
         db.session.commit()
-        striper =s_function(new_item)
-        updated_item = db.get_or_404(Items,new_item.id)
-        updated_item.stripe_id = striper
         db.session.commit()
 
         return redirect('/items')
@@ -69,3 +69,12 @@ def delete_item(id):
     db.session.delete(item)
     db.session.commit()
     return redirect('/items')
+
+
+@app.route('/orders/')
+def view_orders(): 
+    if current_user.is_authenticated:
+        orders = Orders.query.filter_by(username=current_user.username)
+        return render_template('orders.html',orders = orders)
+    else: 
+        redirect('/login')

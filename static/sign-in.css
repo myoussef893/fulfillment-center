@@ -23,3 +23,9 @@ body {
   border-top-left-radius: 0;
   border-top-right-radius: 0;
 }
+#login{
+  width: 100%;
+}
+img{
+margin-left:10rem;
+}

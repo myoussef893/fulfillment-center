@@ -8,9 +8,9 @@
 
 
 # To do this is should contanint the following: 
-# 1. a Dashboard for the client. 
+# 1. a Dashboard for the client. Done
 # 2. a Dashboard for the employee. 
-# 3. a Checkout Page. 
+# 3. a Checkout Page. Done
 # 4. a Login Page. Done
 # 5. a Logout Page. Done
 # 6. a Signup page. Done
@@ -26,13 +26,11 @@ from forms import ItemsForm,UserForm,loginForm,Checkout
 from werkzeug.security import generate_password_hash,check_password_hash
 from flask_bootstrap import Bootstrap4
 from datetime import datetime as dt
-import stripe 
-from stripe_keys_tokens import token
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
+from flask_migrate import Migrate
 
 
-stripe.api_key = token
 app = Flask(__name__)
 bootstrap = Bootstrap4(app)
 admin = Admin(app,name='Shipperd Warehouse',template_mode='bootstrap4')
@@ -47,14 +45,15 @@ def load_user(user_id):
 
 
 db = SQLAlchemy()
-
-
-
+migrate = Migrate(app,db=db)
 app.config['SECRET_KEY'] = 'secret_key'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///warehouserbase.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///warehousebase.db'
 app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'
 
 db.init_app(app)
+
+
+
 
 #Creating Tables 
 class User(UserMixin,db.Model):
@@ -103,12 +102,13 @@ class Items(db.Model):
     item_price = db.Column(db.Float)
     quantity= db.Column(db.Integer,nullable =False)
     scanner = db.Column(db.String)
-    stripe_id = db.Column(db.String)
-    # Relationships: 
-    order = db.relationship('Orders')
+    username = db.Column(db.String, nullable = False)
+    status = db.Column(db.String,nullable= False)
+    order = db.Column(db.Integer)
     # Foreign Keys of Relationships: 
-    username = db.Column(db.String,db.ForeignKey('user.username'))
+    user_id = db.Column(db.String,db.ForeignKey(User.id))
     category_title = db.Column(db.String,db.ForeignKey(Categories.id))
+
 
 # Creating Orders table. 
 class Orders(db.Model): 
@@ -124,6 +124,7 @@ class Orders(db.Model):
     inventory = db.Column(db.String)
     payment_method =db.Column(db.String)
     city = db.Column(db.String,nullable=False)
+    order_number = db.Column(db.Integer)
     # Foreign Keys of Relationships: 
     username = db.Column(db.String,db.ForeignKey('user.username'),nullable =False)
     items = db.Column(db.String, db.ForeignKey(Items.id))
@@ -131,9 +132,14 @@ class Orders(db.Model):
 with app.app_context():
     db.create_all()
 
-
 admin.add_view(ModelView(User,db.session))
 admin.add_view(ModelView(Items,db.session))
+admin.add_view(ModelView(Orders,db.session))
+
+@login_manager.unauthorized_handler
+def unauthorized():
+    # do stuff
+    return redirect('/login')
 
 ## Home page, 
 @app.route('/')
@@ -145,9 +151,16 @@ def home():
 @app.route('/signup',methods=['GET','POST'])
 def signup(): 
     user_form = UserForm()
+    
     if user_form.validate_on_submit(): 
+        u = User.query.filter_by(username=user_form.username.data).first()
+        p = User.query.filter_by(phone=user_form.phone.data).first()
+        e = User.query.filter_by(email=user_form.email.data).first()
+        
+        if u or p or e:
+            flash('User Already exits','danger')
+            return redirect(url_for('signup'))
 
-        print(user_form.name.data)
         user =    User(
             username = user_form.username.data,
             name = user_form.name.data,
@@ -169,17 +182,20 @@ def signup():
 def login():
     login_form = loginForm()
     if login_form.validate_on_submit():
-        enterd_password = login_form.password.data
-        user = User.query.filter_by(username=login_form.username.data).first()
-        if check_password_hash(user.password,enterd_password):
-            login_user(user)
-            print(f'{user.password}')
-            return redirect('/dashboard') # This should be changed to the client dashboard page, not the home page.
-        
+        try:
+            enterd_password = login_form.password.data
+            user = User.query.filter_by(username=login_form.username.data).first()
+            if check_password_hash(user.password,enterd_password):
+                login_user(user)
+                print(f'{user.password}')
+                return redirect('/dashboard') # This should be changed to the client dashboard page, not the home page.
+        except: 
+            flash('Invalid user name or password','danger')
+
     return render_template('login.html',form=login_form)
 
 # Logout route
-@app.route('/logout')
+@app.route('/logout')   
 @login_required
 def logout():
     logout_user()
@@ -190,15 +206,17 @@ def logout():
 
 # This function is suppsed to show the items that are related to the logged in customer only.
 @app.route('/dashboard',methods=['Get','Post'])
+@login_required
 def client_dashboard():
-    items = Items.query.all()
-    return render_template('client-dashboard.html',items=items)
+
+    items_origin = Items.query.filter_by(username=current_user.username,status ='Received in origin warehouse').all()
+    items_transit = Items.query.filter_by(username=current_user.username,status ='In Transit').all()
+    items_arrived = Items.query.filter_by(username=current_user.username,status = "Received at Destination Country's warehouse",quantity = 1).all()
+
+    return render_template('client-dashboard.html',items=items_origin, transit=items_transit, arrived = items_arrived)
 
 from items import *
 from cart import *
-
-
-
 
 
 if __name__ == "__main__": 
