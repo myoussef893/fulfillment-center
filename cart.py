@@ -27,7 +27,7 @@ def add_to_cart(item_id):
     item.quantity -= 1
     db.session.commit()
     flash('Item added to Cart','success')
-    return redirect('/dashboard')
+    return redirect('/items')
 
 @app.route('/remove_from_cart/<int:item_id>', methods=['GET','POST'])
 def remove_from_cart(item_id):

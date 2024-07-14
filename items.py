@@ -6,8 +6,9 @@ from flask_login import current_user
 def view_items():
     if current_user.is_authenticated:  # Check if user is logged in
 
-        items = Items.query.filter_by(username=current_user.username).all()
-        return render_template('items_viewer.html', id=items)
+        items = Items.query.filter_by(username=current_user.username,status='Received in origin warehouse').all()
+        rcvd_in_d = Items.query.filter_by(username = current_user.username,status = "Received at Destination Country's warehouse",quantity=1).all()
+        return render_template('items_viewer.html', id=items,arrived = rcvd_in_d)
     else:
         # Handle case where user is not logged in (e.g., redirect to login page)
         return redirect(url_for('login'))
